@@ -1,6 +1,0 @@
-@NmqPracticeApi_HostAddress = http://localhost:5022
-
-GET {{NmqPracticeApi_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
