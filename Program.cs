@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+
+using NmqPracticeApi.Data;
 using NmqPracticeApi.Repositories;
 using NmqPracticeApi.Services;
 
@@ -9,7 +12,15 @@ builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
-builder.Services.AddSingleton<IProductRepository, ProductRepository>();
+var connectionString =
+    builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException(
+        "The DefaultConnection connection string is missing.");
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(connectionString));
+
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IProductService, ProductService>();
 
 var app = builder.Build();

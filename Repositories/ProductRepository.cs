@@ -1,75 +1,68 @@
+using Microsoft.EntityFrameworkCore;
+using NmqPracticeApi.Data;
 using NmqPracticeApi.Models;
 
 namespace NmqPracticeApi.Repositories;
 
-public class ProductRepository : IProductRepository
+public sealed class ProductRepository : IProductRepository
 {
-    private readonly List<Product> _products =
-    [
-        new Product
-        {
-            Id = 1,
-            Name = "Keyboard",
-            Price = 199.90m,
-            Stock = 10
-        },
-        new Product
-        {
-            Id = 2,
-            Name = "Mouse",
-            Price = 89.90m,
-            Stock = 20
-        }
-    ];
+    private readonly AppDbContext _dbContext;
+
+    public ProductRepository(AppDbContext dbContext)
+    {
+        _dbContext = dbContext;
+    }
 
     public IEnumerable<Product> GetAll()
     {
-        return _products;
+        return _dbContext.Products
+            .AsNoTracking()
+            .OrderBy(product => product.Id)
+            .ToList();
     }
 
     public Product? GetById(int id)
     {
-        return _products.FirstOrDefault(product => product.Id == id);
+        return _dbContext.Products
+            .AsNoTracking()
+            .SingleOrDefault(product => product.Id == id);
     }
 
     public Product Add(Product product)
     {
-        product.Id = _products.Count == 0
-            ? 1
-            : _products.Max(existingProduct => existingProduct.Id) + 1;
-
-        _products.Add(product);
+        _dbContext.Products.Add(product);
+        _dbContext.SaveChanges();
 
         return product;
     }
 
     public bool Update(Product product)
     {
-        var existingProduct = GetById(product.Id);
-
-        if (existingProduct is null)
+        if (!_dbContext.Products.Any(existing =>
+                existing.Id == product.Id))
         {
             return false;
         }
 
-        existingProduct.Name = product.Name;
-        existingProduct.Price = product.Price;
-        existingProduct.Stock = product.Stock;
-        existingProduct.UpdatedAt = DateTime.UtcNow;
+        product.UpdatedAt = DateTime.UtcNow;
+
+        _dbContext.Products.Update(product);
+        _dbContext.SaveChanges();
 
         return true;
     }
 
     public bool Delete(int id)
     {
-        var product = GetById(id);
+        var product = _dbContext.Products.Find(id);
 
         if (product is null)
         {
             return false;
         }
 
-        _products.Remove(product);
+        _dbContext.Products.Remove(product);
+        _dbContext.SaveChanges();
 
         return true;
     }
