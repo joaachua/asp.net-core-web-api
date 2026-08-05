@@ -3,11 +3,13 @@ using Microsoft.EntityFrameworkCore;
 using NmqPracticeApi.Data;
 using NmqPracticeApi.Repositories;
 using NmqPracticeApi.Services;
+using FluentValidation;
+using NmqPracticeApi.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
+builder.Services.AddValidatorsFromAssemblyContaining<CreateProductValidator>();
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
